@@ -27,9 +27,11 @@ public class Todo {
     @Column(length = 1000)
     private String description;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean completed = false;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TodoPriority priority = TodoPriority.MEDIUM;

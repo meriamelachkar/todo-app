@@ -1,0 +1,111 @@
+package com.todoapp.service;
+
+import com.todoapp.dto.TodoDto;
+import com.todoapp.model.Todo;
+import com.todoapp.model.TodoList;
+import com.todoapp.repository.TodoListRepository;
+import com.todoapp.repository.TodoRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class TodoService {
+
+    private final TodoRepository todoRepository;
+    private final TodoListRepository todoListRepository;
+
+    public List<TodoDto.Response> getAll(Long listId) {
+        if (listId != null) {
+            return todoRepository.findByTodoListId(listId)
+                    .stream().map(this::toResponse).toList();
+        }
+        return todoRepository.findAll()
+                .stream().map(this::toResponse).toList();
+    }
+
+    public TodoDto.Response getById(Long id) {
+        return toResponse(findOrThrow(id));
+    }
+
+    public TodoDto.Response create(TodoDto.Request request) {
+        TodoList list = todoListRepository.findById(request.listId())
+                .orElseThrow(() -> new EntityNotFoundException("TodoList not found: " + request.listId()));
+
+        Todo todo = Todo.builder()
+                .title(request.title())
+                .description(request.description())
+                .priority(request.priority() != null ? request.priority() : com.todoapp.model.TodoPriority.MEDIUM)
+                .category(request.category())
+                .tags(request.tags())
+                .dueDate(request.dueDate())
+                .todoList(list)
+                .build();
+
+        return toResponse(todoRepository.save(todo));
+    }
+
+    public TodoDto.Response update(Long id, TodoDto.Request request) {
+        Todo todo = findOrThrow(id);
+        if (request.title() != null)       todo.setTitle(request.title());
+        if (request.description() != null) todo.setDescription(request.description());
+        if (request.priority() != null)    todo.setPriority(request.priority());
+        if (request.category() != null)    todo.setCategory(request.category());
+        if (request.tags() != null)        todo.setTags(request.tags());
+        if (request.dueDate() != null)     todo.setDueDate(request.dueDate());
+        return toResponse(todoRepository.save(todo));
+    }
+
+    public TodoDto.Response toggleComplete(Long id) {
+        Todo todo = findOrThrow(id);
+        todo.setCompleted(!todo.isCompleted());
+        return toResponse(todoRepository.save(todo));
+    }
+
+    public void delete(Long id) {
+        if (!todoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Todo not found: " + id);
+        }
+        todoRepository.deleteById(id);
+    }
+
+    public Map<String, Object> getStats() {
+        long total = todoRepository.count();
+        long open = todoRepository.countByCompleted(false);
+        long done = total - open;
+        return Map.of(
+                "total", total,
+                "open", open,
+                "completed", done,
+                "completionRate", total == 0 ? 0 : Math.round((double) done / total * 100)
+        );
+    }
+
+    private Todo findOrThrow(Long id) {
+        return todoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Todo not found: " + id));
+    }
+
+    private TodoDto.Response toResponse(Todo t) {
+        return new TodoDto.Response(
+                t.getId(),
+                t.getTitle(),
+                t.getDescription(),
+                t.isCompleted(),
+                t.getPriority(),
+                t.getCategory(),
+                t.getTags(),
+                t.getDueDate(),
+                t.getTodoList().getId(),
+                t.getTodoList().getName(),
+                t.getCreatedAt(),
+                t.getUpdatedAt()
+        );
+    }
+}
