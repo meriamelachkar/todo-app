@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -29,7 +30,7 @@ public class TodoListController {
 
     @PostMapping
     public ResponseEntity<TodoListDto.Response> createList(
-            @RequestBody TodoListDto.Request request
+            @Valid @RequestBody TodoListDto.Request request
     ) {
         TodoListDto.Response createdList = todoListService.createList(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdList);
@@ -38,7 +39,7 @@ public class TodoListController {
     @PutMapping("/{id}")
     public TodoListDto.Response updateList(
             @PathVariable Long id,
-            @RequestBody TodoListDto.Request request
+            @Valid @RequestBody TodoListDto.Request request
     ) {
         return todoListService.updateList(id, request);
     }

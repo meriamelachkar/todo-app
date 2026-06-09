@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/todos")
@@ -37,7 +38,7 @@ public class TodoController {
     }
 
     @PostMapping
-    public ResponseEntity<TodoDto.Response> createTodo(@RequestBody TodoDto.Request request) {
+    public ResponseEntity<TodoDto.Response> createTodo(@Valid @RequestBody TodoDto.Request request) {
         TodoDto.Response createdTodo = todoService.createTodo(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTodo);
     }
@@ -45,7 +46,7 @@ public class TodoController {
     @PutMapping("/{id}")
     public TodoDto.Response updateTodo(
             @PathVariable Long id,
-            @RequestBody TodoDto.Request request
+            @Valid @RequestBody TodoDto.Request request
     ) {
         return todoService.updateTodo(id, request);
     }

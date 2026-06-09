@@ -32,8 +32,6 @@ import java.util.List;
             TodoList list = TodoList.builder()
                     .name(request.name())
                     .description(request.description())
-                    .color(request.color() != null ? request.color() : "#6366f1")
-                    .icon(request.icon() != null ? request.icon() : "📋")
                     .build();
             return toResponse(todoListRepository.save(list));
         }
@@ -42,8 +40,6 @@ import java.util.List;
             TodoList list = findOrThrow(id);
             if (request.name() != null)        list.setName(request.name());
             if (request.description() != null) list.setDescription(request.description());
-            if (request.color() != null)       list.setColor(request.color());
-            if (request.icon() != null)        list.setIcon(request.icon());
             return toResponse(todoListRepository.save(list));
         }
 
@@ -65,8 +61,6 @@ import java.util.List;
                     list.getId(),
                     list.getName(),
                     list.getDescription(),
-                    list.getColor(),
-                    list.getIcon(),
                     list.getTodos().size(),
                     (int) completed,
                     list.getCreatedAt(),

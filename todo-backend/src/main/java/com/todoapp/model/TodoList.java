@@ -28,12 +28,6 @@ public class TodoList {
     @Column(length = 500)
     private String description;
 
-    @Builder.Default
-    private String color = "#6366f1";
-
-    @Builder.Default
-    private String icon = "📋";
-
     @OneToMany(mappedBy = "todoList", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Todo> todos = new ArrayList<>();
