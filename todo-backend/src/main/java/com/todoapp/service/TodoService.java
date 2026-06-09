@@ -30,8 +30,29 @@ public class TodoService {
                 .stream().map(this::toResponse).toList();
     }
 
+    public List<TodoDto.Response> getTodos(
+            Long listId,
+            Boolean completed,
+            com.todoapp.model.TodoPriority priority,
+            com.todoapp.model.TodoCategory category
+    ) {
+        return getAll(listId).stream()
+                .filter(todo -> completed == null || todo.completed() == completed)
+                .filter(todo -> priority == null || todo.priority() == priority)
+                .filter(todo -> category == null || todo.category() == category)
+                .toList();
+    }
+
     public TodoDto.Response getById(Long id) {
         return toResponse(findOrThrow(id));
+    }
+
+    public TodoDto.Response getTodoById(Long id) {
+        return getById(id);
+    }
+
+    public TodoDto.Response createTodo(TodoDto.Request request) {
+        return create(request);
     }
 
     public TodoDto.Response create(TodoDto.Request request) {
@@ -62,10 +83,18 @@ public class TodoService {
         return toResponse(todoRepository.save(todo));
     }
 
+    public TodoDto.Response updateTodo(Long id, TodoDto.Request request) {
+        return update(id, request);
+    }
+
     public TodoDto.Response toggleComplete(Long id) {
         Todo todo = findOrThrow(id);
         todo.setCompleted(!todo.isCompleted());
         return toResponse(todoRepository.save(todo));
+    }
+
+    public TodoDto.Response toggleTodo(Long id) {
+        return toggleComplete(id);
     }
 
     public void delete(Long id) {
@@ -75,7 +104,11 @@ public class TodoService {
         todoRepository.deleteById(id);
     }
 
-    public Map<String, Object> getStats() {
+    public void deleteTodo(Long id) {
+        delete(id);
+    }
+
+    public Map<String, Long> getStats() {
         long total = todoRepository.count();
         long open = todoRepository.countByCompleted(false);
         long done = total - open;
@@ -83,7 +116,7 @@ public class TodoService {
                 "total", total,
                 "open", open,
                 "completed", done,
-                "completionRate", total == 0 ? 0 : Math.round((double) done / total * 100)
+                "completionRate", total == 0 ? 0L : Math.round((double) done / total * 100)
         );
     }
 
