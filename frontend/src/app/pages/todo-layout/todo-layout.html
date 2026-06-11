@@ -1,1 +1,79 @@
-<p>todo-layout works!</p>
+<div class="container-fluid min-vh-100 bg-light">
+  <div class="row min-vh-100">
+    <aside class="col-12 col-md-4 col-lg-3 bg-white border-end p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <p class="text-uppercase text-muted fw-bold small mb-1">Todo App</p>
+          <h1 class="h4 fw-bold mb-0">Meine Listen</h1>
+        </div>
+
+        <button class="btn btn-primary btn-sm rounded-3" type="button">
+          +
+        </button>
+      </div>
+
+      <nav class="d-flex flex-column gap-2 mb-4" aria-label="Hauptnavigation">
+        <a
+          class="list-group-item list-group-item-action border rounded-4 p-3 text-decoration-none"
+          routerLink="/dashboard"
+          routerLinkActive="active"
+        >
+          <div class="fw-semibold">Dashboard</div>
+          <div class="small text-muted mt-1">Übersicht aller Listen</div>
+        </a>
+      </nav>
+
+      @if (loading) {
+        <div class="alert alert-secondary rounded-4 mb-0" role="status">
+          Listen werden geladen...
+        </div>
+      }
+
+      @if (!loading && errorMessage) {
+        <div class="alert alert-danger rounded-4 mb-0" role="alert">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (!loading && !errorMessage && lists.length === 0) {
+        <div class="card border-0 bg-light rounded-4">
+          <div class="card-body text-muted">
+            Noch keine Listen vorhanden.
+          </div>
+        </div>
+      }
+
+      @if (!loading && !errorMessage && lists.length > 0) {
+        <nav class="d-flex flex-column gap-2" aria-label="Todo-Listen Navigation">
+          @for (list of lists; track list.id) {
+            <a
+              class="list-group-item list-group-item-action border rounded-4 p-3 text-decoration-none"
+              [routerLink]="['/todo-list', list.id]"
+              routerLinkActive="active"
+            >
+              <div class="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <div class="fw-semibold">{{ list.name }}</div>
+
+                  @if (list.description) {
+                    <div class="small text-muted mt-1">
+                      {{ list.description }}
+                    </div>
+                  }
+                </div>
+
+                <span class="badge text-bg-light border rounded-pill">
+                  {{ list.completedTodos }}/{{ list.totalTodos }}
+                </span>
+              </div>
+            </a>
+          }
+        </nav>
+      }
+    </aside>
+
+    <main class="col-12 col-md-8 col-lg-9 p-0">
+      <app-todo-list-page></app-todo-list-page>
+    </main>
+  </div>
+</div>

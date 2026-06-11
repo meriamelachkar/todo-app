@@ -1,1 +1,118 @@
-<p>todo-list-page works!</p>
+<section class="container-fluid py-4">
+  @if (loading) {
+    <div class="alert alert-secondary rounded-4 shadow-sm mb-0" role="status">
+      Liste wird geladen...
+    </div>
+  }
+
+  @if (!loading && errorMessage) {
+    <div class="alert alert-danger rounded-4 shadow-sm mb-0" role="alert">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (!loading && !errorMessage && !list) {
+    <div class="card border-0 shadow-sm rounded-4">
+      <div class="card-body p-4 text-muted">
+        Wähle links eine Liste aus.
+      </div>
+    </div>
+  }
+
+  @if (!loading && !errorMessage && list) {
+    <div class="d-flex flex-column gap-4">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+            <div>
+              <p class="text-uppercase text-muted fw-bold small mb-2">
+                Ausgewählte Liste
+              </p>
+
+              <h1 class="display-6 fw-bold mb-2">
+                {{ list.name }}
+              </h1>
+
+              @if (list.description) {
+                <p class="lead text-muted mb-0">
+                  {{ list.description }}
+                </p>
+              }
+            </div>
+
+            <button class="btn btn-primary rounded-3 px-4" type="button">
+              + Neues Todo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+              <p class="text-muted mb-2">Gesamt</p>
+              <h2 class="fw-bold mb-0">{{ list.totalTodos }}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+              <p class="text-muted mb-2">Erledigt</p>
+              <h2 class="fw-bold mb-0">{{ list.completedTodos }}</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+              <p class="text-muted mb-2">Fortschritt</p>
+              <h2 class="fw-bold mb-0">{{ progressPercent }}%</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold">Fortschritt</span>
+            <span class="text-muted small">
+              {{ list.completedTodos }}/{{ list.totalTodos }} erledigt
+            </span>
+          </div>
+
+          <div
+            class="progress"
+            role="progressbar"
+            aria-label="Fortschritt"
+            [attr.aria-valuenow]="progressPercent"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            <div class="progress-bar" [style.width.%]="progressPercent">
+              {{ progressPercent }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 fw-bold mb-0">Todos</h2>
+            <span class="badge text-bg-light border">Nächster Schritt</span>
+          </div>
+
+          <p class="text-muted mb-0">
+            Als Nächstes laden wir hier die Todos dieser Liste über
+            <code>GET /api/todos?listId={{ list.id }}</code>.
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+</section>
