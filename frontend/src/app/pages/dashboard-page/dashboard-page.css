@@ -1,0 +1,123 @@
+:host {
+  display: block;
+  min-height: 100%;
+  color: #1f2937;
+}
+
+section {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.container {
+  max-width: 1180px;
+}
+
+.card {
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.09) !important;
+}
+
+.card-body {
+  background: #ffffff;
+  border-radius: 1rem;
+}
+
+.text-uppercase {
+  letter-spacing: 0.08em;
+}
+
+.display-6,
+.h4,
+.fw-bold,
+.fw-semibold {
+  color: #111827;
+}
+
+.btn-primary {
+  background: #2563eb;
+  border-color: #2563eb;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.progress {
+  height: 0.85rem;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.badge {
+  font-weight: 700;
+}
+
+.badge.text-bg-light {
+  background: #f8fafc !important;
+  color: #111827 !important;
+}
+
+.list-group-item {
+  border-color: #e5e7eb !important;
+  width: 100%;
+  border-right: 0;
+  border-left: 0;
+  background: transparent;
+  text-align: left;
+  transition: background 0.15s ease, padding-left 0.15s ease;
+}
+
+.list-group-item:hover {
+  background: #f8fafc;
+  padding-left: 0.5rem !important;
+}
+
+.alert-secondary {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.alert-danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+code {
+  color: #db2777;
+  background: #fdf2f8;
+  border-radius: 0.35rem;
+  padding: 0.1rem 0.35rem;
+}
+
+@media (max-width: 767.98px) {
+  section {
+    padding: 1rem !important;
+  }
+
+  .card-body {
+    padding: 1.25rem !important;
+  }
+
+  .display-6 {
+    font-size: 2rem;
+  }
+}

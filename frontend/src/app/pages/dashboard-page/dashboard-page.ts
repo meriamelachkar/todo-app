@@ -1,41 +1,47 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router } from '@angular/router';
 
 import { TodoList } from '../../models/todo-list.model';
 import { TodoListService } from '../../services/todo-list.service';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.css',
 })
 export class DashboardPage implements OnInit {
+  private readonly destroyRef = inject(DestroyRef);
+
   lists: TodoList[] = [];
   loading = false;
   errorMessage = '';
 
-  constructor(private readonly todoListService: TodoListService) {}
+  constructor(
+    private readonly todoListService: TodoListService,
+    private readonly router: Router,
+  ) {}
 
   ngOnInit(): void {
-    this.loadLists();
-  }
-
-  private loadLists(): void {
-    this.loading = true;
-    this.errorMessage = '';
-
-    this.todoListService.getLists().subscribe({
-      next: lists => {
+    this.todoListService.lists$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((lists) => {
         this.lists = lists;
-        this.loading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Dashboard-Daten konnten nicht geladen werden.';
-        this.loading = false;
-      }
-    });
+      });
+
+    this.todoListService.loading$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((loading) => {
+        this.loading = loading;
+      });
+
+    this.todoListService.error$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((error) => {
+        this.errorMessage = error;
+      });
   }
 
   get totalLists(): number {
@@ -60,5 +66,13 @@ export class DashboardPage implements OnInit {
     }
 
     return Math.round((this.completedTodos / this.totalTodos) * 100);
+  }
+
+  navigateToLists(): void {
+    void this.router.navigate(['/todo-list']);
+  }
+
+  navigateToList(listId: number): void {
+    void this.router.navigate(['/todo-list', listId]);
   }
 }

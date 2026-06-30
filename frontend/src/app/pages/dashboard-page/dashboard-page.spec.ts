@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { TodoListService } from '../../services/todo-list.service';
 import { DashboardPage } from './dashboard-page';
@@ -25,15 +25,20 @@ const todoListsMock = [
   },
 ];
 
-const todoListServiceMock = {
-  getLists: () => of(todoListsMock),
-};
-
 describe('DashboardPage', () => {
   let component: DashboardPage;
   let fixture: ComponentFixture<DashboardPage>;
+  let listsSubject: BehaviorSubject<typeof todoListsMock>;
+  let todoListServiceMock: Pick<TodoListService, 'getLists'> & { lists$: BehaviorSubject<typeof todoListsMock> };
 
   beforeEach(async () => {
+    listsSubject = new BehaviorSubject(todoListsMock);
+    todoListServiceMock = {
+      lists$: listsSubject,
+      getLists: () => of(todoListsMock),
+    };
+
+
     await TestBed.configureTestingModule({
       imports: [DashboardPage],
       providers: [
