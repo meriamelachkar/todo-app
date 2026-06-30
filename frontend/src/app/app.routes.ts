@@ -1,31 +1,26 @@
 import { Routes } from '@angular/router';
 import { DashboardPage } from './pages/dashboard-page/dashboard-page';
-import { TodoLayout } from './pages/todo-layout/todo-layout';
+
+import { TodoDetailPage } from './pages/todo-detail-page/todo-detail-page';
 import { TodoListPage } from './pages/todo-list-page/todo-list-page';
 
 export const routes: Routes = [
   {
     path: '',
-    component: TodoLayout,
-    children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
-      },
-      {
-        path: 'todo-list',
-        component: TodoListPage,
-      },
-      {
-        path: 'todo-list/:listId',
-        component: TodoListPage,
-      },
-      {
-        path: 'dashboard',
-        component: DashboardPage,
-      },
-    ],
+    redirectTo: 'dashboard',
+    pathMatch: 'full',
+  },
+  {
+    path: 'dashboard',
+    component: DashboardPage,
+  },
+  {
+    path: 'lists',
+    component: TodoListPage,
+  },
+  {
+    path: 'lists/:listId',
+    component: TodoDetailPage,
   },
   {
     path: '**',

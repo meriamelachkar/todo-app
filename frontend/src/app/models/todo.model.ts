@@ -1,23 +1,21 @@
-export type TodoCategory = 'ARBEIT' | 'PRIVAT' | 'UNI' | 'EINKAUF' | 'GESUNDHEIT' | 'FINANZEN';
-export type TodoPriority = 'URGENT' | 'HIGH' | 'MEDIUM' | 'LOW';
+
+
+export type TodoPriority = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export type TodoCategory = 'UNI' | 'ARBEIT' | 'PRIVAT' | 'SONSTIGES';
 
 export interface Todo {
   id: number;
-  listId: number;
   title: string;
-  description: string | null;
-  category: TodoCategory | null;
-  priority: TodoPriority;
-  tags: string | null;
-  dueDate: string | null;
+  description?: string | null;
   completed: boolean;
-  createdAt: string;
-  updatedAt: string;
+  listId: number;
+  priority?: TodoPriority;
+  category?: TodoCategory;
 }
 
-export interface CreateTodoRequest {
-  title: string;
-  description: string | null;
-  category: TodoCategory;
-  listId: number;
+export interface TodoStats {
+  totalTodos: number;
+  completedTodos: number;
+  openTodos: number;
 }

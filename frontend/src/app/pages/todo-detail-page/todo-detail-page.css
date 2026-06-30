@@ -1,0 +1,25 @@
+
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.card {
+  border-radius: 1rem;
+}
+
+.list-group-item:last-child {
+  border-bottom: 0;
+}
+
+button,
+.form-control,
+.form-select {
+  border-radius: 0.75rem;
+}
+
+.text-decoration-line-through {
+  opacity: 0.65;
+}

@@ -1,0 +1,194 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <a class="btn btn-outline-secondary btn-sm mb-3" routerLink="/lists">
+        Zurück zu den Listen
+      </a>
+
+      @if (loadingList()) {
+        <p class="text-muted mb-0">Liste wird geladen...</p>
+      } @else if (list()) {
+        <h1 class="h2 fw-bold mb-1">{{ list()?.name }}</h1>
+
+        @if (list()?.description) {
+          <p class="text-muted mb-0">{{ list()?.description }}</p>
+        }
+      }
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger rounded-4" role="alert">
+      <strong>Fehler:</strong> {{ errorMessage() }}
+    </div>
+  }
+
+  @if (todoErrorMessage()) {
+    <div class="alert alert-warning rounded-4" role="alert">
+      <strong>Hinweis:</strong> {{ todoErrorMessage() }}
+    </div>
+  }
+
+  @if (list()) {
+    <section class="row g-3 mb-4" aria-label="Todo Statistik">
+      <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Alle Todos</p>
+            <p class="h3 fw-bold mb-0">{{ totalTodos() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Offen</p>
+            <p class="h3 fw-bold mb-0">{{ openTodos() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Erledigt</p>
+            <p class="h3 fw-bold mb-0">{{ completedTodos() }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm rounded-4 mb-4" aria-labelledby="create-todo-title">
+      <div class="card-body">
+        <h2 id="create-todo-title" class="h5 fw-bold mb-3">Neues Todo erstellen</h2>
+
+        <form class="row g-3" (ngSubmit)="createTodo()">
+          <div class="col-12 col-lg-6">
+            <label class="form-label" for="todo-title">Titel</label>
+            <input
+              id="todo-title"
+              class="form-control"
+              name="todoTitle"
+              type="text"
+              [ngModel]="newTodoTitle()"
+              (ngModelChange)="newTodoTitle.set($event)"
+              placeholder="z. B. Mathe Kapitel 1 lernen"
+              [disabled]="savingTodo()"
+              required
+            />
+          </div>
+
+          <div class="col-12 col-lg-6">
+            <label class="form-label" for="todo-description">Beschreibung</label>
+            <input
+              id="todo-description"
+              class="form-control"
+              name="todoDescription"
+              type="text"
+              [ngModel]="newTodoDescription()"
+              (ngModelChange)="newTodoDescription.set($event)"
+              placeholder="Optional"
+              [disabled]="savingTodo()"
+            />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="todo-category">Kategorie</label>
+            <select
+              id="todo-category"
+              class="form-select"
+              name="todoCategory"
+              [ngModel]="newTodoCategory()"
+              (ngModelChange)="newTodoCategory.set($event)"
+              [disabled]="savingTodo()"
+            >
+              <option value="UNI">Uni</option>
+              <option value="ARBEIT">Arbeit</option>
+              <option value="PRIVAT">Privat</option>
+              <option value="SONSTIGES">Sonstiges</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="todo-priority">Priorität</label>
+            <select
+              id="todo-priority"
+              class="form-select"
+              name="todoPriority"
+              [ngModel]="newTodoPriority()"
+              (ngModelChange)="newTodoPriority.set($event)"
+              [disabled]="savingTodo()"
+            >
+              <option value="LOW">Niedrig</option>
+              <option value="MEDIUM">Mittel</option>
+              <option value="HIGH">Hoch</option>
+            </select>
+          </div>
+
+          <div class="col-12">
+            <button class="btn btn-primary rounded-3" type="submit" [disabled]="savingTodo()">
+              {{ savingTodo() ? 'Wird gespeichert...' : 'Todo erstellen' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="card border-0 shadow-sm rounded-4" aria-labelledby="todos-title">
+      <div class="card-body">
+        <h2 id="todos-title" class="h5 fw-bold mb-3">Todos dieser Liste</h2>
+
+        @if (loadingTodos()) {
+          <div class="alert alert-secondary rounded-4 mb-0" role="status">
+            Todos werden geladen...
+          </div>
+        } @else if (todos().length === 0) {
+          <div class="alert alert-light border rounded-4 mb-0" role="status">
+            Diese Liste hat noch keine Todos.
+          </div>
+        } @else {
+          <div class="list-group list-group-flush">
+            @for (todo of todos(); track todo.id) {
+              <article class="list-group-item px-0 py-3">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                  <div>
+                    <h3 class="h6 fw-bold mb-1" [class.text-decoration-line-through]="todo.completed">
+                      {{ todo.title }}
+                    </h3>
+
+                    @if (todo.description) {
+                      <p class="text-muted mb-2">{{ todo.description }}</p>
+                    }
+
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="badge rounded-pill text-bg-light border">
+                        {{ todo.category || 'Keine Kategorie' }}
+                      </span>
+                      <span class="badge rounded-pill text-bg-light border">
+                        {{ todo.priority || 'Keine Priorität' }}
+                      </span>
+                      <span class="badge rounded-pill" [class.text-bg-success]="todo.completed" [class.text-bg-secondary]="!todo.completed">
+                        {{ todo.completed ? 'Erledigt' : 'Offen' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="d-flex gap-2 flex-shrink-0">
+                    <button class="btn btn-outline-success btn-sm rounded-3" type="button" (click)="toggleTodo(todo)">
+                      {{ todo.completed ? 'Öffnen' : 'Erledigt' }}
+                    </button>
+
+                    <button class="btn btn-outline-danger btn-sm rounded-3" type="button" (click)="deleteTodo(todo)">
+                      Löschen
+                    </button>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

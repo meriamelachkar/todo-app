@@ -1,78 +1,124 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
+import { Todo, TodoStats } from '../../models/todo.model';
 import { TodoList } from '../../models/todo-list.model';
 import { TodoListService } from '../../services/todo-list.service';
+import { TodoService } from '../../services/todo.service';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.css',
 })
-export class DashboardPage implements OnInit {
-  private readonly destroyRef = inject(DestroyRef);
+export class DashboardPage {
+  private readonly todoService = inject(TodoService);
+  private readonly todoListService = inject(TodoListService);
 
-  lists: TodoList[] = [];
-  loading = false;
-  errorMessage = '';
+  readonly stats = signal<TodoStats | null>(null);
+  readonly lists = signal<TodoList[]>([]);
+  readonly todos = signal<Todo[]>([]);
+  readonly loadingStats = signal(false);
+  readonly loadingLists = signal(false);
+  readonly loadingTodos = signal(false);
+  readonly errorMessage = signal('');
 
-  constructor(
-    private readonly todoListService: TodoListService,
-    private readonly router: Router,
-  ) {}
+  readonly today = new Intl.DateTimeFormat('de-DE', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date());
 
-  ngOnInit(): void {
-    this.todoListService.lists$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((lists) => {
-        this.lists = lists;
-      });
+  readonly totalLists = computed(() => this.lists().length);
+  readonly latestLists = computed(() => this.lists().slice(0, 4));
+  readonly recentTodos = computed(() => this.todos().slice(0, 5));
 
-    this.todoListService.loading$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((loading) => {
-        this.loading = loading;
-      });
+  readonly totalTodos = computed(() => this.stats()?.totalTodos ?? this.todos().length);
+  readonly completedTodos = computed(() => this.stats()?.completedTodos ?? this.todos().filter((todo) => todo.completed).length);
+  readonly openTodos = computed(() => this.stats()?.openTodos ?? this.todos().filter((todo) => !todo.completed).length);
+  readonly completionRate = computed(() => {
+    const total = this.totalTodos();
 
-    this.todoListService.error$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((error) => {
-        this.errorMessage = error;
-      });
-  }
-
-  get totalLists(): number {
-    return this.lists.length;
-  }
-
-  get totalTodos(): number {
-    return this.lists.reduce((sum, list) => sum + list.totalTodos, 0);
-  }
-
-  get completedTodos(): number {
-    return this.lists.reduce((sum, list) => sum + list.completedTodos, 0);
-  }
-
-  get openTodos(): number {
-    return this.totalTodos - this.completedTodos;
-  }
-
-  get progressPercent(): number {
-    if (this.totalTodos === 0) {
+    if (total === 0) {
       return 0;
     }
 
-    return Math.round((this.completedTodos / this.totalTodos) * 100);
+    return Math.round((this.completedTodos() / total) * 100);
+  });
+
+  constructor() {
+    this.loadDashboard();
   }
 
-  navigateToLists(): void {
-    void this.router.navigate(['/todo-list']);
+  loadDashboard(): void {
+    this.loadStats();
+    this.loadLists();
+    this.loadTodos();
   }
 
-  navigateToList(listId: number): void {
-    void this.router.navigate(['/todo-list', listId]);
+  getListName(listId: number): string {
+    return this.lists().find((list) => list.id === listId)?.name ?? 'Liste';
+  }
+
+  getListProgress(list: TodoList): number {
+    const total = list.totalTodos ?? 0;
+
+    if (total === 0) {
+      return 0;
+    }
+
+    return Math.round(((list.completedTodos ?? 0) / total) * 100);
+  }
+
+  private loadStats(): void {
+    this.loadingStats.set(true);
+    this.errorMessage.set('');
+
+    this.todoService.getStats().subscribe({
+      next: (stats) => {
+        this.stats.set(stats);
+        this.loadingStats.set(false);
+      },
+      error: () => {
+        this.stats.set(null);
+        this.loadingStats.set(false);
+        this.errorMessage.set('Die Dashboard-Statistiken konnten nicht geladen werden.');
+      },
+    });
+  }
+
+  private loadLists(): void {
+    this.loadingLists.set(true);
+
+    this.todoListService.getLists().subscribe({
+      next: (lists) => {
+        this.lists.set(lists);
+        this.loadingLists.set(false);
+      },
+      error: () => {
+        this.lists.set([]);
+        this.loadingLists.set(false);
+        this.errorMessage.set('Die Listen konnten nicht geladen werden.');
+      },
+    });
+  }
+
+  private loadTodos(): void {
+    this.loadingTodos.set(true);
+
+    this.todoService.getTodos().subscribe({
+      next: (todos) => {
+        this.todos.set(todos);
+        this.loadingTodos.set(false);
+      },
+      error: () => {
+        this.todos.set([]);
+        this.loadingTodos.set(false);
+        this.errorMessage.set('Die aktuellen Aufgaben konnten nicht geladen werden.');
+      },
+    });
   }
 }

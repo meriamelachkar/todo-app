@@ -1,134 +1,138 @@
-<section class="container-fluid min-vh-100 bg-light py-4">
-  <div class="container">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-      <div>
-        <p class="text-uppercase text-muted fw-bold small mb-2">Dashboard</p>
-        <h1 class="display-6 fw-bold mb-2">Übersicht</h1>
-        <p class="text-muted mb-0">
-          Hier siehst du eine Zusammenfassung deiner Todo-Listen.
-        </p>
-      </div>
+<div class="dashboard-shell">
+  <header class="dashboard-header">
+    <a class="brand" routerLink="/dashboard" aria-label="Dashboard öffnen">
+      <span class="brand-icon">✓</span>
+      <span>TodoApp</span>
+    </a>
 
-      <button class="btn btn-primary rounded-3 px-4" type="button" (click)="navigateToLists()">
-        Zu meinen Listen
-      </button>
+    <div class="search-box" aria-label="Suche">
+      <span>⌕</span>
+      <input type="text" placeholder="Aufgaben suchen..." disabled />
     </div>
+  </header>
 
-    @if (loading) {
-      <div class="alert alert-secondary rounded-4 shadow-sm" role="status">
-        Dashboard wird geladen...
-      </div>
-    }
+  <div class="dashboard-body">
+    <aside class="sidebar">
+      <a class="sidebar-link active" routerLink="/dashboard">
+        <span>▦</span>
+        Dashboard
+      </a>
 
-    @if (!loading && errorMessage) {
-      <div class="alert alert-danger rounded-4 shadow-sm" role="alert">
-        {{ errorMessage }}
-      </div>
-    }
+      <div class="sidebar-section">
+        <p class="sidebar-title">Meine Listen</p>
 
-    @if (!loading && !errorMessage) {
-      <div class="row g-3 mb-4">
-        <div class="col-12 col-md-6 col-xl-3">
-          <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-              <p class="text-muted mb-2">Listen</p>
-              <h2 class="fw-bold mb-0">{{ totalLists }}</h2>
-            </div>
+        @if (loadingLists()) {
+          <p class="text-muted small mb-0">Listen werden geladen...</p>
+        } @else if (lists().length === 0) {
+          <p class="text-muted small mb-0">Noch keine Listen.</p>
+        } @else {
+          <div class="sidebar-list">
+            @for (list of lists(); track list.id) {
+              <a class="sidebar-list-item" [routerLink]="['/lists', list.id]">
+                <span class="dot"></span>
+                <span class="list-name">{{ list.name }}</span>
+                <span class="count">{{ list.totalTodos ?? 0 }}</span>
+              </a>
+            }
           </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-3">
-          <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-              <p class="text-muted mb-2">Todos gesamt</p>
-              <h2 class="fw-bold mb-0">{{ totalTodos }}</h2>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-3">
-          <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-              <p class="text-muted mb-2">Erledigt</p>
-              <h2 class="fw-bold mb-0">{{ completedTodos }}</h2>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-xl-3">
-          <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body p-4">
-              <p class="text-muted mb-2">Offen</p>
-              <h2 class="fw-bold mb-0">{{ openTodos }}</h2>
-            </div>
-          </div>
-        </div>
+        }
       </div>
 
-      <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-semibold">Gesamtfortschritt</span>
-            <span class="text-muted small">{{ completedTodos }}/{{ totalTodos }} erledigt</span>
-          </div>
+      <a class="new-list-link" routerLink="/lists">
+        + Neue Liste
+      </a>
+    </aside>
 
-          <div
-            class="progress"
-            role="progressbar"
-            aria-label="Gesamtfortschritt"
-            [attr.aria-valuenow]="progressPercent"
-            aria-valuemin="0"
-            aria-valuemax="100"
-          >
-            <div class="progress-bar" [style.width.%]="progressPercent">
-              {{ progressPercent }}%
-            </div>
-          </div>
+    <main class="content">
+      <div class="content-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p>{{ today }}</p>
         </div>
+
+        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">
+          + Neue Liste
+        </a>
       </div>
 
-      <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 fw-bold mb-0">Meine Listen</h2>
-            <span class="badge text-bg-light border rounded-pill">{{ totalLists }} Listen</span>
-          </div>
+      @if (errorMessage()) {
+        <div class="alert alert-danger rounded-4 mt-3" role="alert">
+          <strong>Fehler:</strong> {{ errorMessage() }}
+        </div>
+      }
 
-          @if (lists.length === 0) {
-            <p class="text-muted mb-0">
-              Noch keine Listen vorhanden. Erstelle zuerst eine Liste.
-            </p>
+      <section class="stats-grid" aria-label="Dashboard Statistik">
+        <article class="stat-card stat-blue">
+          <p>Gesamt</p>
+          <strong>{{ loadingStats() ? '...' : totalTodos() }}</strong>
+          <div class="mini-progress"><span style="width: 100%"></span></div>
+        </article>
+
+        <article class="stat-card stat-red">
+          <p>Offen</p>
+          <strong>{{ loadingStats() ? '...' : openTodos() }}</strong>
+          <div class="mini-progress"><span [style.width.%]="totalTodos() ? (openTodos() / totalTodos()) * 100 : 0"></span></div>
+        </article>
+
+        <article class="stat-card stat-green">
+          <p>Erledigt</p>
+          <strong>{{ loadingStats() ? '...' : completedTodos() }}</strong>
+          <div class="mini-progress"><span [style.width.%]="completionRate()"></span></div>
+        </article>
+
+        <article class="stat-card stat-blue">
+          <p>Abschlussrate</p>
+          <strong>{{ loadingStats() ? '...' : completionRate() + '%' }}</strong>
+          <div class="mini-progress"><span [style.width.%]="completionRate()"></span></div>
+        </article>
+      </section>
+
+      <section class="section-header">
+        <h2>Meine Listen</h2>
+        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">Alle anzeigen</a>
+      </section>
+
+      @if (loadingLists()) {
+        <div class="alert alert-secondary rounded-4" role="status">Listen werden geladen...</div>
+      } @else if (latestLists().length === 0) {
+        <div class="alert alert-light border rounded-4" role="status">Noch keine Listen vorhanden.</div>
+      } @else {
+        <section class="list-card-grid" aria-label="Todo Listen">
+          @for (list of latestLists(); track list.id) {
+            <a class="todo-list-card" [routerLink]="['/lists', list.id]">
+              <div class="list-emoji">📋</div>
+              <h3>{{ list.name }}</h3>
+              <p>{{ list.totalTodos ?? 0 }} Aufgaben</p>
+              <div class="list-progress-row">
+                <div class="list-progress"><span [style.width.%]="getListProgress(list)"></span></div>
+                <span>{{ list.completedTodos ?? 0 }}/{{ list.totalTodos ?? 0 }}</span>
+              </div>
+            </a>
           }
+        </section>
+      }
 
-          @if (lists.length > 0) {
-            <div class="list-group list-group-flush">
-              @for (list of lists; track list.id) {
-                <button
-                  class="list-group-item list-group-item-action px-0 py-3"
-                  type="button"
-                  (click)="navigateToList(list.id)"
-                >
-                  <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div>
-                      <div class="fw-semibold">{{ list.name }}</div>
+      <section class="section-header mt-4">
+        <h2>Aktuelle Aufgaben</h2>
+        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">Alle anzeigen</a>
+      </section>
 
-                      @if (list.description) {
-                        <div class="small text-muted mt-1">
-                          {{ list.description }}
-                        </div>
-                      }
-                    </div>
-
-                    <span class="badge text-bg-light border rounded-pill">
-                      {{ list.completedTodos }}/{{ list.totalTodos }}
-                    </span>
-                  </div>
-                </button>
-              }
-            </div>
+      <section class="tasks-box" aria-label="Aktuelle Aufgaben">
+        @if (loadingTodos()) {
+          <div class="alert alert-secondary rounded-4 mb-0" role="status">Aufgaben werden geladen...</div>
+        } @else if (recentTodos().length === 0) {
+          <div class="alert alert-light border rounded-4 mb-0" role="status">Noch keine Aufgaben vorhanden.</div>
+        } @else {
+          @for (todo of recentTodos(); track todo.id) {
+            <a class="task-row" [routerLink]="['/lists', todo.listId]">
+              <span class="task-check" [class.done]="todo.completed">{{ todo.completed ? '✓' : '' }}</span>
+              <span class="task-title" [class.done-title]="todo.completed">{{ todo.title }}</span>
+              <span class="task-badge">{{ todo.priority ?? 'Normal' }}</span>
+              <span class="task-list-name">{{ getListName(todo.listId) }}</span>
+            </a>
           }
-        </div>
-      </div>
-    }
+        }
+      </section>
+    </main>
   </div>
-</section>
+</div>

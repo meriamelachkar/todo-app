@@ -1,59 +1,94 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, timeout } from 'rxjs';
 
-import { CreateTodoRequest, Todo } from '../models/todo.model';
+
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import { Todo, TodoCategory, TodoPriority, TodoStats } from '../models/todo.model';
+
+export interface CreateTodoRequest {
+  title: string;
+  description?: string | null;
+  listId: number;
+  completed?: boolean;
+  priority?: TodoPriority;
+  category?: TodoCategory;
+}
+
+export interface UpdateTodoRequest {
+  title: string;
+  description?: string | null;
+  listId: number;
+  completed: boolean;
+  priority?: TodoPriority;
+  category?: TodoCategory;
+}
+
+export interface TodoFilter {
+  listId?: number;
+  completed?: boolean;
+  priority?: TodoPriority;
+  category?: TodoCategory;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class TodoService {
+  private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/todos';
-  private readonly requestTimeoutMs = 10000;
-  private readonly todosByListSubject = new BehaviorSubject<Record<number, Todo[]>>({});
 
-  readonly todosByList$ = this.todosByListSubject.asObservable();
+  getTodos(filter?: TodoFilter): Observable<Todo[]> {
+    let params = new HttpParams();
 
-  constructor(private readonly http: HttpClient) {}
+    if (filter?.listId !== undefined) {
+      params = params.set('listId', filter.listId);
+    }
 
-  getTodosByListId(listId: number): Observable<Todo[]> {
-    return this.http.get<Todo[]>(`${this.apiUrl}?listId=${listId}`).pipe(
-      timeout(this.requestTimeoutMs),
-      tap((todos) => this.setCachedTodos(listId, todos)),
-    );
+    if (filter?.completed !== undefined) {
+      params = params.set('completed', filter.completed);
+    }
+
+    if (filter?.priority) {
+      params = params.set('priority', filter.priority);
+    }
+
+    if (filter?.category) {
+      params = params.set('category', filter.category);
+    }
+
+    return this.http.get<Todo[]>(this.apiUrl, { params });
   }
 
-  getCachedTodosByListId(listId: number): Todo[] {
-    return this.todosByListSubject.value[listId] ?? [];
+  getTodosByListId(listId: number): Observable<Todo[]> {
+    return this.getTodos({ listId });
+  }
+
+  getTodoById(id: number): Observable<Todo> {
+    return this.http.get<Todo>(`${this.apiUrl}/${id}`);
   }
 
   createTodo(request: CreateTodoRequest): Observable<Todo> {
-    return this.http.post<Todo>(this.apiUrl, request).pipe(
-      timeout(this.requestTimeoutMs),
-      tap((createdTodo) => {
-        const todos = this.getCachedTodosByListId(createdTodo.listId);
-        this.setCachedTodos(createdTodo.listId, [createdTodo, ...todos.filter((todo) => todo.id !== createdTodo.id)]);
-      }),
-    );
+    return this.http.post<Todo>(this.apiUrl, request);
+  }
+
+  updateTodo(id: number, request: UpdateTodoRequest): Observable<Todo> {
+    return this.http.put<Todo>(`${this.apiUrl}/${id}`, request);
   }
 
   toggleTodo(id: number): Observable<Todo> {
-    return this.http.patch<Todo>(`${this.apiUrl}/${id}/toggle`, {}).pipe(
-      timeout(this.requestTimeoutMs),
-      tap((updatedTodo) => {
-        const todos = this.getCachedTodosByListId(updatedTodo.listId);
-        this.setCachedTodos(
-          updatedTodo.listId,
-          todos.map((todo) => todo.id === updatedTodo.id ? updatedTodo : todo),
-        );
-      }),
-    );
+    return this.http.patch<Todo>(`${this.apiUrl}/${id}/toggle`, {});
   }
 
-  private setCachedTodos(listId: number, todos: Todo[]): void {
-    this.todosByListSubject.next({
-      ...this.todosByListSubject.value,
-      [listId]: todos,
-    });
+  deleteTodo(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  getStats(): Observable<TodoStats> {
+    return this.http.get<TodoStats>(`${this.apiUrl}/stats`);
+  }
+
+  getCategories(): Observable<TodoCategory[]> {
+    return this.http.get<TodoCategory[]>(`${this.apiUrl}/categories`);
   }
 }
