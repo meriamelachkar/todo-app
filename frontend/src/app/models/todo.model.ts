@@ -2,7 +2,7 @@
 
 export type TodoPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 
-export type TodoCategory = 'UNI' | 'ARBEIT' | 'PRIVAT' | 'SONSTIGES';
+export type TodoCategory = 'ARBEIT' | 'PRIVAT' | 'UNI' | 'EINKAUF' | 'GESUNDHEIT' | 'FINANZEN';
 
 export interface Todo {
   id: number;

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { Todo, TodoStats } from '../../models/todo.model';
 import { TodoList } from '../../models/todo-list.model';
@@ -16,6 +16,7 @@ import { TodoService } from '../../services/todo.service';
 export class DashboardPage {
   private readonly todoService = inject(TodoService);
   private readonly todoListService = inject(TodoListService);
+  private readonly router = inject(Router);
 
   readonly stats = signal<TodoStats | null>(null);
   readonly lists = signal<TodoList[]>([]);
@@ -24,6 +25,7 @@ export class DashboardPage {
   readonly loadingLists = signal(false);
   readonly loadingTodos = signal(false);
   readonly errorMessage = signal('');
+  readonly searchQuery = signal('');
 
   readonly today = new Intl.DateTimeFormat('de-DE', {
     weekday: 'long',
@@ -35,6 +37,42 @@ export class DashboardPage {
   readonly totalLists = computed(() => this.lists().length);
   readonly latestLists = computed(() => this.lists().slice(0, 4));
   readonly recentTodos = computed(() => this.todos().slice(0, 5));
+  readonly searchResults = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+
+    if (!query) {
+      return [];
+    }
+
+    const listResults = this.lists()
+      .filter((list) => list.name.toLowerCase().includes(query))
+      .slice(0, 4)
+      .map((list) => ({
+        id: list.id,
+        title: list.name,
+        label: 'Liste',
+        route: ['/lists', list.id],
+        queryParams: { highlightListTitle: 'true' },
+      }));
+
+    const todoResults = this.todos()
+      .filter((todo) =>
+        todo.title.toLowerCase().includes(query) ||
+        (todo.description ?? '').toLowerCase().includes(query) ||
+        (todo.category ?? '').toLowerCase().includes(query) ||
+        (todo.priority ?? '').toLowerCase().includes(query),
+      )
+      .slice(0, 6)
+      .map((todo) => ({
+        id: todo.id,
+        title: todo.title,
+        label: 'Aufgabe',
+        route: ['/lists', todo.listId],
+        queryParams: { highlightTodoId: todo.id },
+      }));
+
+    return [...listResults, ...todoResults].slice(0, 8);
+  });
 
   readonly totalTodos = computed(() => this.stats()?.totalTodos ?? this.todos().length);
   readonly completedTodos = computed(() => this.stats()?.completedTodos ?? this.todos().filter((todo) => todo.completed).length);
@@ -57,6 +95,20 @@ export class DashboardPage {
     this.loadStats();
     this.loadLists();
     this.loadTodos();
+  }
+
+  updateSearchQuery(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery.set(input.value);
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+  }
+
+  openSearchResult(result: { route: (string | number)[]; queryParams?: Record<string, string | number> }): void {
+    this.searchQuery.set('');
+    void this.router.navigate(result.route, { queryParams: result.queryParams });
   }
 
   getListName(listId: number): string {
@@ -118,6 +170,19 @@ export class DashboardPage {
         this.todos.set([]);
         this.loadingTodos.set(false);
         this.errorMessage.set('Die aktuellen Aufgaben konnten nicht geladen werden.');
+      },
+    });
+  }
+
+  toggleTodo(todo: Todo): void {
+    this.todoService.toggleTodo(todo.id).subscribe({
+      next: () => {
+        this.loadStats();
+        this.loadLists();
+        this.loadTodos();
+      },
+      error: () => {
+        this.errorMessage.set('Die Aufgabe konnte nicht aktualisiert werden.');
       },
     });
   }

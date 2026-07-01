@@ -1,0 +1,33 @@
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">✓</div>
+    <span>TodoApp</span>
+  </div>
+
+  <nav class="nav">
+    <a routerLink="/dashboard" routerLinkActive="active">
+      Dashboard
+    </a>
+
+    <a routerLink="/lists" routerLinkActive="active">
+      Listen
+    </a>
+  </nav>
+
+  <section class="recent-lists" aria-labelledby="recent-lists-title">
+    <p id="recent-lists-title" class="recent-title">Neueste Listen</p>
+
+    @if (recentLists().length === 0) {
+      <p class="recent-empty">Noch keine Listen</p>
+    } @else {
+      <div class="recent-list-links">
+        @for (list of recentLists(); track list.id) {
+          <a class="recent-list-link" [routerLink]="['/lists', list.id]" routerLinkActive="active-list">
+            <span class="recent-list-icon">{{ getListIcon(list.id) }}</span>
+            <span class="recent-list-name">{{ list.name }}</span>
+          </a>
+        }
+      </div>
+    }
+  </section>
+</aside>

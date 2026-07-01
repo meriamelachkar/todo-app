@@ -41,6 +41,15 @@ export class TodoDetailPage {
   readonly newTodoCategory = signal<TodoCategory>('UNI');
   readonly newTodoPriority = signal<TodoPriority>('MEDIUM');
 
+  readonly todoCategories: { value: TodoCategory; label: string }[] = [
+    { value: 'ARBEIT', label: 'Arbeit' },
+    { value: 'PRIVAT', label: 'Privat' },
+    { value: 'UNI', label: 'Uni' },
+    { value: 'EINKAUF', label: 'Einkauf' },
+    { value: 'GESUNDHEIT', label: 'Gesundheit' },
+    { value: 'FINANZEN', label: 'Finanzen' },
+  ];
+
   readonly completedTodos = computed(() => this.todos().filter((todo) => todo.completed).length);
   readonly openTodos = computed(() => this.todos().filter((todo) => !todo.completed).length);
   readonly totalTodos = computed(() => this.todos().length);

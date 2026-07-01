@@ -1,96 +1,85 @@
-<div class="dashboard-shell">
-  <header class="dashboard-header">
-    <a class="brand" routerLink="/dashboard" aria-label="Dashboard öffnen">
-      <span class="brand-icon">✓</span>
-      <span>TodoApp</span>
-    </a>
-
-    <div class="search-box" aria-label="Suche">
-      <span>⌕</span>
-      <input type="text" placeholder="Aufgaben suchen..." disabled />
+<div class="dashboard-page">
+  <div class="content-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p>{{ today }}</p>
     </div>
-  </header>
 
-  <div class="dashboard-body">
-    <aside class="sidebar">
-      <a class="sidebar-link active" routerLink="/dashboard">
-        <span>▦</span>
-        Dashboard
-      </a>
+    <div class="dashboard-actions">
+      <div class="search-wrapper">
+        <label class="search-box" aria-label="Suche">
+          <span>⌕</span>
+          <input
+            type="search"
+            placeholder="Listen und Aufgaben suchen..."
+            [value]="searchQuery()"
+            (input)="updateSearchQuery($event)"
+          />
+        </label>
 
-      <div class="sidebar-section">
-        <p class="sidebar-title">Meine Listen</p>
-
-        @if (loadingLists()) {
-          <p class="text-muted small mb-0">Listen werden geladen...</p>
-        } @else if (lists().length === 0) {
-          <p class="text-muted small mb-0">Noch keine Listen.</p>
-        } @else {
-          <div class="sidebar-list">
-            @for (list of lists(); track list.id) {
-              <a class="sidebar-list-item" [routerLink]="['/lists', list.id]">
-                <span class="dot"></span>
-                <span class="list-name">{{ list.name }}</span>
-                <span class="count">{{ list.totalTodos ?? 0 }}</span>
-              </a>
+        @if (searchQuery().trim()) {
+          <button class="search-backdrop" type="button" aria-label="Suche schließen" (click)="clearSearch()"></button>
+        }
+        @if (searchQuery().trim()) {
+          <div class="search-results" role="listbox">
+            @if (searchResults().length === 0) {
+              <div class="search-empty">Keine Ergebnisse gefunden</div>
+            } @else {
+              @for (result of searchResults(); track result.label + '-' + result.id) {
+                <button class="search-result" type="button" (click)="openSearchResult(result)">
+                  <span class="search-result-type">{{ result.label }}</span>
+                  <span class="search-result-title">{{ result.title }}</span>
+                </button>
+              }
             }
           </div>
         }
       </div>
 
-      <a class="new-list-link" routerLink="/lists">
+      <a class="btn btn-primary rounded-4" routerLink="/lists">
         + Neue Liste
       </a>
-    </aside>
+    </div>
+  </div>
 
-    <main class="content">
-      <div class="content-header">
-        <div>
-          <h1>Dashboard</h1>
-          <p>{{ today }}</p>
-        </div>
+  @if (errorMessage()) {
+    <div class="alert alert-danger rounded-4 mt-3" role="alert">
+      <strong>Fehler:</strong> {{ errorMessage() }}
+    </div>
+  }
 
-        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">
-          + Neue Liste
-        </a>
-      </div>
+  <section class="stats-grid" aria-label="Dashboard Statistik">
+    <article class="stat-card stat-blue">
+      <p>Gesamt</p>
+      <strong>{{ loadingStats() ? '...' : totalTodos() }}</strong>
+      <div class="mini-progress"><span style="width: 100%"></span></div>
+    </article>
 
-      @if (errorMessage()) {
-        <div class="alert alert-danger rounded-4 mt-3" role="alert">
-          <strong>Fehler:</strong> {{ errorMessage() }}
-        </div>
-      }
+    <article class="stat-card stat-red">
+      <p>Offen</p>
+      <strong>{{ loadingStats() ? '...' : openTodos() }}</strong>
+      <div class="mini-progress"><span [style.width.%]="totalTodos() ? (openTodos() / totalTodos()) * 100 : 0"></span></div>
+    </article>
 
-      <section class="stats-grid" aria-label="Dashboard Statistik">
-        <article class="stat-card stat-blue">
-          <p>Gesamt</p>
-          <strong>{{ loadingStats() ? '...' : totalTodos() }}</strong>
-          <div class="mini-progress"><span style="width: 100%"></span></div>
-        </article>
+    <article class="stat-card stat-green">
+      <p>Erledigt</p>
+      <strong>{{ loadingStats() ? '...' : completedTodos() }}</strong>
+      <div class="mini-progress"><span [style.width.%]="completionRate()"></span></div>
+    </article>
 
-        <article class="stat-card stat-red">
-          <p>Offen</p>
-          <strong>{{ loadingStats() ? '...' : openTodos() }}</strong>
-          <div class="mini-progress"><span [style.width.%]="totalTodos() ? (openTodos() / totalTodos()) * 100 : 0"></span></div>
-        </article>
+    <article class="stat-card stat-blue">
+      <p>Rate</p>
+      <strong>{{ loadingStats() ? '...' : completionRate() + '%' }}</strong>
+      <div class="mini-progress"><span [style.width.%]="completionRate()"></span></div>
+    </article>
+  </section>
 
-        <article class="stat-card stat-green">
-          <p>Erledigt</p>
-          <strong>{{ loadingStats() ? '...' : completedTodos() }}</strong>
-          <div class="mini-progress"><span [style.width.%]="completionRate()"></span></div>
-        </article>
-
-        <article class="stat-card stat-blue">
-          <p>Abschlussrate</p>
-          <strong>{{ loadingStats() ? '...' : completionRate() + '%' }}</strong>
-          <div class="mini-progress"><span [style.width.%]="completionRate()"></span></div>
-        </article>
-      </section>
-
-      <section class="section-header">
+  <div class="dashboard-columns">
+    <section class="dashboard-column">
+      <div class="section-header">
         <h2>Meine Listen</h2>
-        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">Alle anzeigen</a>
-      </section>
+        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">+ Liste</a>
+      </div>
 
       @if (loadingLists()) {
         <div class="alert alert-secondary rounded-4" role="status">Listen werden geladen...</div>
@@ -100,22 +89,28 @@
         <section class="list-card-grid" aria-label="Todo Listen">
           @for (list of latestLists(); track list.id) {
             <a class="todo-list-card" [routerLink]="['/lists', list.id]">
-              <div class="list-emoji">📋</div>
-              <h3>{{ list.name }}</h3>
-              <p>{{ list.totalTodos ?? 0 }} Aufgaben</p>
+              <div class="list-card-header">
+                <div>
+                  <div class="list-emoji">📋</div>
+                  <h3>{{ list.name }}</h3>
+                </div>
+                <span>{{ list.completedTodos ?? 0 }}/{{ list.totalTodos ?? 0 }}</span>
+              </div>
+
               <div class="list-progress-row">
                 <div class="list-progress"><span [style.width.%]="getListProgress(list)"></span></div>
-                <span>{{ list.completedTodos ?? 0 }}/{{ list.totalTodos ?? 0 }}</span>
               </div>
             </a>
           }
         </section>
       }
+    </section>
 
-      <section class="section-header mt-4">
+    <section class="dashboard-column">
+      <div class="section-header">
         <h2>Aktuelle Aufgaben</h2>
-        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">Alle anzeigen</a>
-      </section>
+        <a class="btn btn-outline-dark rounded-4" routerLink="/lists">Alle</a>
+      </div>
 
       <section class="tasks-box" aria-label="Aktuelle Aufgaben">
         @if (loadingTodos()) {
@@ -124,15 +119,26 @@
           <div class="alert alert-light border rounded-4 mb-0" role="status">Noch keine Aufgaben vorhanden.</div>
         } @else {
           @for (todo of recentTodos(); track todo.id) {
-            <a class="task-row" [routerLink]="['/lists', todo.listId]">
-              <span class="task-check" [class.done]="todo.completed">{{ todo.completed ? '✓' : '' }}</span>
-              <span class="task-title" [class.done-title]="todo.completed">{{ todo.title }}</span>
+            <div class="task-row">
+              <button
+                class="task-check"
+                type="button"
+                [class.done]="todo.completed"
+                [attr.aria-label]="todo.completed ? 'Aufgabe als offen markieren' : 'Aufgabe als erledigt markieren'"
+                (click)="toggleTodo(todo); $event.stopPropagation()"
+              >
+                {{ todo.completed ? '✓' : '' }}
+              </button>
+
+              <a class="task-title" [class.done-title]="todo.completed" [routerLink]="['/lists', todo.listId]">
+                {{ todo.title }}
+              </a>
+
               <span class="task-badge">{{ todo.priority ?? 'Normal' }}</span>
-              <span class="task-list-name">{{ getListName(todo.listId) }}</span>
-            </a>
+            </div>
           }
         }
       </section>
-    </main>
+    </section>
   </div>
 </div>

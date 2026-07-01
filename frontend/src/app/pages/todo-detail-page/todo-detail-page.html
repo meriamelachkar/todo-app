@@ -1,21 +1,19 @@
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <a class="btn btn-outline-secondary btn-sm mb-3" routerLink="/lists">
-        Zurück zu den Listen
-      </a>
+  <header class="mb-4">
+    <a class="btn btn-outline-secondary btn-sm rounded-3 mb-3" routerLink="/lists">
+      Zurück zu den Listen
+    </a>
 
-      @if (loadingList()) {
-        <p class="text-muted mb-0">Liste wird geladen...</p>
-      } @else if (list()) {
-        <h1 class="h2 fw-bold mb-1">{{ list()?.name }}</h1>
+    @if (loadingList()) {
+      <p class="text-muted mb-0">Liste wird geladen...</p>
+    } @else if (list()) {
+      <h1 class="h2 fw-bold mb-1">{{ list()?.name }}</h1>
 
-        @if (list()?.description) {
-          <p class="text-muted mb-0">{{ list()?.description }}</p>
-        }
+      @if (list()?.description) {
+        <p class="text-muted mb-0">{{ list()?.description }}</p>
       }
-    </div>
-  </div>
+    }
+  </header>
 
   @if (errorMessage()) {
     <div class="alert alert-danger rounded-4" role="alert">
@@ -32,30 +30,30 @@
   @if (list()) {
     <section class="row g-3 mb-4" aria-label="Todo Statistik">
       <div class="col-12 col-md-4">
-        <div class="card border-0 shadow-sm rounded-4">
+        <article class="card border-0 shadow-sm rounded-4 h-100 stat-card stat-total">
           <div class="card-body">
-            <p class="text-muted small mb-1">Alle Todos</p>
+            <p class="text-muted small fw-bold mb-2">Alle Todos</p>
             <p class="h3 fw-bold mb-0">{{ totalTodos() }}</p>
           </div>
-        </div>
+        </article>
       </div>
 
       <div class="col-12 col-md-4">
-        <div class="card border-0 shadow-sm rounded-4">
+        <article class="card border-0 shadow-sm rounded-4 h-100 stat-card stat-open">
           <div class="card-body">
-            <p class="text-muted small mb-1">Offen</p>
+            <p class="text-muted small fw-bold mb-2">Offen</p>
             <p class="h3 fw-bold mb-0">{{ openTodos() }}</p>
           </div>
-        </div>
+        </article>
       </div>
 
       <div class="col-12 col-md-4">
-        <div class="card border-0 shadow-sm rounded-4">
+        <article class="card border-0 shadow-sm rounded-4 h-100 stat-card stat-done">
           <div class="card-body">
-            <p class="text-muted small mb-1">Erledigt</p>
+            <p class="text-muted small fw-bold mb-2">Erledigt</p>
             <p class="h3 fw-bold mb-0">{{ completedTodos() }}</p>
           </div>
-        </div>
+        </article>
       </div>
     </section>
 
@@ -68,7 +66,7 @@
             <label class="form-label" for="todo-title">Titel</label>
             <input
               id="todo-title"
-              class="form-control"
+              class="form-control rounded-3"
               name="todoTitle"
               type="text"
               [ngModel]="newTodoTitle()"
@@ -83,7 +81,7 @@
             <label class="form-label" for="todo-description">Beschreibung</label>
             <input
               id="todo-description"
-              class="form-control"
+              class="form-control rounded-3"
               name="todoDescription"
               type="text"
               [ngModel]="newTodoDescription()"
@@ -97,16 +95,15 @@
             <label class="form-label" for="todo-category">Kategorie</label>
             <select
               id="todo-category"
-              class="form-select"
+              class="form-select rounded-3"
               name="todoCategory"
               [ngModel]="newTodoCategory()"
               (ngModelChange)="newTodoCategory.set($event)"
               [disabled]="savingTodo()"
             >
-              <option value="UNI">Uni</option>
-              <option value="ARBEIT">Arbeit</option>
-              <option value="PRIVAT">Privat</option>
-              <option value="SONSTIGES">Sonstiges</option>
+              @for (category of todoCategories; track category.value) {
+                <option [value]="category.value">{{ category.label }}</option>
+              }
             </select>
           </div>
 
@@ -114,7 +111,7 @@
             <label class="form-label" for="todo-priority">Priorität</label>
             <select
               id="todo-priority"
-              class="form-select"
+              class="form-select rounded-3"
               name="todoPriority"
               [ngModel]="newTodoPriority()"
               (ngModelChange)="newTodoPriority.set($event)"
@@ -137,7 +134,14 @@
 
     <section class="card border-0 shadow-sm rounded-4" aria-labelledby="todos-title">
       <div class="card-body">
-        <h2 id="todos-title" class="h5 fw-bold mb-3">Todos dieser Liste</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h2 id="todos-title" class="h5 fw-bold mb-0">Todos dieser Liste</h2>
+            <span class="badge rounded-pill text-bg-info-subtle text-info-emphasis">
+              {{ todos().length }} Einträge
+            </span>
+          </div>
+        </div>
 
         @if (loadingTodos()) {
           <div class="alert alert-secondary rounded-4 mb-0" role="status">
@@ -148,42 +152,49 @@
             Diese Liste hat noch keine Todos.
           </div>
         } @else {
-          <div class="list-group list-group-flush">
+          <div class="list-group list-group-flush todo-list-group">
             @for (todo of todos(); track todo.id) {
-              <article class="list-group-item px-0 py-3">
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                  <div>
-                    <h3 class="h6 fw-bold mb-1" [class.text-decoration-line-through]="todo.completed">
-                      {{ todo.title }}
-                    </h3>
+              <article class="list-group-item todo-list-row" [class.completed]="todo.completed">
+                <button
+                  class="todo-check-button"
+                  type="button"
+                  [attr.aria-label]="todo.completed ? 'Todo als offen markieren' : 'Todo als erledigt markieren'"
+                  (click)="toggleTodo(todo)"
+                >
+                  @if (todo.completed) {
+                    ✓
+                  }
+                </button>
 
-                    @if (todo.description) {
-                      <p class="text-muted mb-2">{{ todo.description }}</p>
-                    }
-
-                    <div class="d-flex flex-wrap gap-2">
-                      <span class="badge rounded-pill text-bg-light border">
-                        {{ todo.category || 'Keine Kategorie' }}
-                      </span>
-                      <span class="badge rounded-pill text-bg-light border">
-                        {{ todo.priority || 'Keine Priorität' }}
-                      </span>
-                      <span class="badge rounded-pill" [class.text-bg-success]="todo.completed" [class.text-bg-secondary]="!todo.completed">
-                        {{ todo.completed ? 'Erledigt' : 'Offen' }}
-                      </span>
-                    </div>
+                <div class="todo-list-content">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h3 class="todo-list-title mb-0">{{ todo.title }}</h3>
+                    <span class="priority-badge" [ngClass]="'priority-' + (todo.priority || 'MEDIUM').toLowerCase()">
+                      {{ todo.priority || 'MEDIUM' }}
+                    </span>
                   </div>
 
-                  <div class="d-flex gap-2 flex-shrink-0">
-                    <button class="btn btn-outline-success btn-sm rounded-3" type="button" (click)="toggleTodo(todo)">
-                      {{ todo.completed ? 'Öffnen' : 'Erledigt' }}
-                    </button>
+                  @if (todo.description) {
+                    <p class="todo-list-description mb-0">{{ todo.description }}</p>
+                  }
 
-                    <button class="btn btn-outline-danger btn-sm rounded-3" type="button" (click)="deleteTodo(todo)">
-                      Löschen
-                    </button>
+                  <div class="d-flex flex-wrap gap-2 mt-1">
+                    <span class="category-badge">{{ todo.category || 'Keine Kategorie' }}</span>
+                    <span class="status-badge" [class.done]="todo.completed">
+                      {{ todo.completed ? 'Erledigt' : 'Offen' }}
+                    </span>
                   </div>
                 </div>
+
+                <button
+                  class="todo-delete-button"
+                  type="button"
+                  aria-label="Todo löschen"
+                  title="Todo löschen"
+                  (click)="deleteTodo(todo)"
+                >
+                  🗑️
+                </button>
               </article>
             }
           </div>
