@@ -1,1 +1,114 @@
-<p>todo-list-page works!</p>
+<div class="todo-list-page py-4">
+  <div class="page-header">
+    <div>
+      <h1>Meine Todo-Listen</h1>
+      <p>Wähle eine Liste aus oder erstelle eine neue.</p>
+    </div>
+
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert alert-danger rounded-4" role="alert">
+      <strong>Fehler:</strong> {{ errorMessage() }}
+    </div>
+  }
+
+  @if (createErrorMessage()) {
+    <div class="alert alert-warning rounded-4" role="alert">
+      <strong>Hinweis:</strong> {{ createErrorMessage() }}
+    </div>
+  }
+
+  <section class="create-card" aria-labelledby="create-list-title">
+    <h2 id="create-list-title">Neue Liste erstellen</h2>
+
+    <form class="create-form" (ngSubmit)="createList()">
+      <div class="form-field">
+        <label for="list-name">Listenname</label>
+        <input
+          id="list-name"
+          class="form-control"
+          name="listName"
+          type="text"
+          [ngModel]="newListName()"
+          (ngModelChange)="newListName.set($event)"
+          placeholder="z. B. Uni, Haushalt, Bewerbung"
+          [disabled]="saving()"
+          required
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="list-icon">Icon</label>
+        <select
+          id="list-icon"
+          class="form-select"
+          name="listIcon"
+          [ngModel]="newListIcon()"
+          (ngModelChange)="newListIcon.set($event)"
+          [disabled]="saving()"
+        >
+          <option value="📋">📋 Allgemein</option>
+          <option value="💼">💼 Arbeit</option>
+          <option value="🏠">🏠 Privat</option>
+          <option value="📚">📚 Uni</option>
+          <option value="🛒">🛒 Einkauf</option>
+          <option value="🏥">🏥 Gesundheit</option>
+          <option value="💰">💰 Finanzen</option>
+          <option value="💻">💻 Coding</option>
+          <option value="🎯">🎯 Ziele</option>
+          <option value="⭐">⭐ Wichtig</option>
+          <option value="📝">📝 Notizen</option>
+          <option value="📅">📅 Termine</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary create-button" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Speichern...' : 'Erstellen' }}
+      </button>
+    </form>
+  </section>
+
+  <section class="list-panel" aria-labelledby="lists-title">
+    <div class="list-panel-header">
+      <div class="list-title-group">
+        <h2 id="lists-title">Chronologische Listen</h2>
+        <span class="count-badge">{{ lists().length }} Einträge</span>
+      </div>
+
+      <button class="icon-button" type="button" aria-label="Neu laden" title="Neu laden" (click)="loadLists()">
+        ↻
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="empty-state" role="status">Listen werden geladen...</div>
+    } @else if (lists().length === 0) {
+      <div class="empty-state" role="status">Noch keine Listen vorhanden. Erstelle oben deine erste Liste.</div>
+    } @else {
+      <div class="list-rows">
+        @for (list of lists(); track list.id; let index = $index) {
+          <article class="list-row">
+            <button class="list-main" type="button" (click)="openList(list)">
+              <span class="row-dot"></span>
+              <span class="list-icon">{{ getListIcon(list) }}</span>
+              <span class="list-content">
+                <span class="list-name">{{ list.name }}</span>
+              </span>
+            </button>
+
+            <button
+              class="delete-icon-button"
+              type="button"
+              aria-label="Liste löschen"
+              title="Liste löschen"
+              (click)="deleteList(list)"
+            >
+              🗑️
+            </button>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</div>

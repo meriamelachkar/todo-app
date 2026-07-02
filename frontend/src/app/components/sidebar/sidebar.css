@@ -1,0 +1,125 @@
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav a {
+  min-height: 42px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  color: #374151;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.nav a:hover {
+  background-color: #f3f4f6;
+}
+
+.nav a.active {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 800;
+}
+
+.recent-lists {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #edf0f4;
+}
+
+.recent-title {
+  margin: 0 0 10px;
+  padding: 0 8px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recent-empty {
+  margin: 0;
+  padding: 0 8px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.recent-list-links {
+  display: grid;
+  gap: 6px;
+}
+
+.recent-list-link {
+  min-height: 38px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  color: #1e293b;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.recent-list-link:hover,
+.recent-list-link.active-list {
+  background: #eef4ff;
+  color: #2563eb;
+}
+
+.recent-list-icon {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 14px;
+}
+
+.recent-list-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

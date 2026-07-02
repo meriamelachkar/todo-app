@@ -1,0 +1,10 @@
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  background-color: #f8fafc;
+}
+
+.page-content {
+  flex: 1;
+  padding: 24px;
+}
