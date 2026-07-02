@@ -181,7 +181,7 @@ npm test -- --watch=false
 Für die lokale Ausführung werden benötigt:
 
 - Java 21 oder neuer
-- Node.js 20 oder neuer
+- Node.js 24
 - npm
 - Angular CLI
 - Docker Desktop
@@ -208,6 +208,8 @@ Im Projektordner:
 ```bash
 docker-compose up -d
 ```
+
+Die PostgreSQL-Datenbank wird über Docker Compose gestartet. Durch ein Docker Volume bleiben gespeicherte Daten auch nach einem Neustart der Container erhalten.
 
 ### Backend starten
 
@@ -399,7 +401,7 @@ Eine Todo-Liste kann beliebig viele Todos enthalten. Jedes Todo gehört genau zu
 ### TodoPriority
 
 ```text
-LOW · MEDIUM · HIGH · URGENT
+LOW · MEDIUM · HIGH
 ```
 
 ### TodoCategory
